@@ -2,7 +2,9 @@ package edu.zju.transaction_demo;
 
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import java.sql.Connection;
 
 public class DBUtil {
@@ -52,4 +54,27 @@ public class DBUtil {
 		return getConnection().prepareStatement(sql);
 	}
 	
+	public static void close(Connection connection, PreparedStatement pstmt, ResultSet rs) {
+			if (rs != null)
+				try {
+					rs.close();
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			if (pstmt != null)
+				try {
+					pstmt.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			if (connection != null)
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	}
 }

@@ -50,7 +50,7 @@ public class IsolationDemo {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} finally {
-					close(connection, pstmt, rs);
+					DBUtil.close(connection, pstmt, rs);
 				}
 			}
 		});
@@ -87,15 +87,15 @@ public class IsolationDemo {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} finally {
-					close(null, pstmt2, rs2);
-					close(connection, pstmt, rs);
+					DBUtil.close(null, pstmt2, rs2);
+					DBUtil.close(connection, pstmt, rs);
 				}
 			}
 		});
 		t2.start();
 		t1.start();
 	}
-	
+
 	public static void committedRead() {
 		// 提交读: 解决了脏读，产生重复读不一致。
 		Thread t1 = new Thread(new Runnable() {
@@ -118,7 +118,7 @@ public class IsolationDemo {
 					// if (rs.next())
 					// System.out.println("INSERT RETURN PRIMARY KEY: " + rs.getInt(1));
 					// commit。 使得t2可以看到t1提交的数据。
-//					Thread.sleep(1000);
+					// Thread.sleep(1000);
 					if (affectedRow == 1) {
 						connection.commit();
 					} else {
@@ -131,7 +131,7 @@ public class IsolationDemo {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} finally {
-					close(connection, pstmt, rs);
+					DBUtil.close(connection, pstmt, rs);
 				}
 			}
 		});
@@ -169,8 +169,8 @@ public class IsolationDemo {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} finally {
-					close(null, pstmt2, rs2);
-					close(connection, pstmt, rs);
+					DBUtil.close(null, pstmt2, rs2);
+					DBUtil.close(connection, pstmt, rs);
 				}
 			}
 		});
@@ -201,7 +201,7 @@ public class IsolationDemo {
 					// if (rs.next())
 					// System.out.println("INSERT RETURN PRIMARY KEY: " + rs.getInt(1));
 					// commit。 使得t2可以看到t1提交的数据。
-//					Thread.sleep(1000);
+					// Thread.sleep(1000);
 					if (affectedRow == 1) {
 						connection.commit();
 					} else {
@@ -214,7 +214,7 @@ public class IsolationDemo {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} finally {
-					close(connection, pstmt, rs);
+					DBUtil.close(connection, pstmt, rs);
 				}
 			}
 		});
@@ -238,7 +238,7 @@ public class IsolationDemo {
 					if (rs.next()) {
 						System.out.println("Book Nums: " + rs.getInt(1));
 					}
-					// 无论t1是否commit， t2都看不到他的数据。 
+					// 无论t1是否commit， t2都看不到他的数据。
 					Thread.sleep(10000);
 					rs2 = pstmt2.executeQuery();
 					if (rs2.next()) {
@@ -251,19 +251,19 @@ public class IsolationDemo {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} finally {
-					close(null, pstmt2, rs2);
-					close(connection, pstmt, rs);
+					DBUtil.close(null, pstmt2, rs2);
+					DBUtil.close(connection, pstmt, rs);
 				}
 			}
 		});
 		t2.start();
 		t1.start();
 	}
-	
+
 	public static void phantomRead() {
 		phantomRead(Connection.TRANSACTION_REPEATABLE_READ);
 	}
-	
+
 	public static void phantomRead(final int level) {
 		// 幻读问题。其他事物插入数据并commit后，并事物可以修改该插入的数据，并且修改后可以看到了。（修改前无法看到）
 		// 如果两个事物都想修改某个记录（或删除），则有一个会完成，另外一个必须等待锁释放（即commit).
@@ -284,7 +284,7 @@ public class IsolationDemo {
 			// TODO: handle exception
 			e.printStackTrace();
 		} finally {
-			close(connection, pstmt, rs);
+			DBUtil.close(connection, pstmt, rs);
 		}
 		final int bookId = countNum + 1;
 		Thread t1 = new Thread(new Runnable() {
@@ -318,11 +318,11 @@ public class IsolationDemo {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} finally {
-					close(connection, pstmt, rs);
+					DBUtil.close(connection, pstmt, rs);
 				}
 			}
 		});
-		
+
 		Thread t2 = new Thread(new Runnable() {
 			// 事物t1插入后，t2可以修改插入的数据。
 			// 两次读出的数据不一致。
@@ -363,33 +363,20 @@ public class IsolationDemo {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} finally {
-					close(null, pstmtFirst, rsFirst);
-					close(null, pstmtSec, null);
-					close(connection, pstmtThr, rsThr);
+					DBUtil.close(null, pstmtFirst, rsFirst);
+					DBUtil.close(null, pstmtSec, null);
+					DBUtil.close(connection, pstmtThr, rsThr);
 				}
 			}
 		});
 		t2.start();
 		t1.start();
 	}
-	
+
 	public static void serializable() {
 		// 串行化
 		// 读出的数据一致。
 		phantomRead(Connection.TRANSACTION_SERIALIZABLE);
 	}
 
-	public static void close(Connection connection, PreparedStatement pstmt, ResultSet rs) {
-		try {
-			if (rs != null)
-				rs.close();
-			if (pstmt != null)
-				pstmt.close();
-			if (connection != null)
-				connection.close();
-		} catch (SQLException e) {
-			// TODO: handle exception
-			System.err.println("Close connecton error.");
-		}
-	}
 }
